@@ -1,30 +1,27 @@
-const fetch = require('node-fetch');
-const fs = require('fs');
+const settings = require("dotenv").config();
+const express = require('express')
+const cors = require('cors')
 
-const FILE_ENCODING = "utf8";
-const DATA_FOLDER = "data";
-const OUTPUT_FILE_EXTENSION = "html";
-const WEBSITES = ["https://turkish123.com/", "https://luna0cosmetics.myshopify.com/", "http://all-guitar-chords.com/"];
+const app = express()
+const port = process.env.PORT || 5000
 
-function cleanUrl(url) {
-    return url.replace(/(https|http)|[/\\?%*:|"<>]/g, '');
-}
+app.use(cors())
 
-function generateFileName(website) {
-    return `./${DATA_FOLDER}/${cleanUrl(website)}.${OUTPUT_FILE_EXTENSION}`;
-}
+app.get('/heartbeat', (req, res) => {
+    res.status(200).json({success: "ok"});
+})
 
-function generateFile(website, html) {
-    const file = generateFileName(website);
-    fs.writeFile(file, html, FILE_ENCODING, (err) => {
-        if(err) throw err;
-        console.log(`Created File => ${file}`);
-    })
-}
+app.get('/api/scrape', (req, res) => {
+    const website = req.query.website
+    console.log("incoming request", website);
+    if(!website) {
+        res.status(400).send("Please provide a website");
+    } else {
+        res.status(200).json({success: website});
+    }
+})
 
-WEBSITES.forEach(
-    website => fetch(website)
-        .then(response => response.text())
-        .then(html => generateFile(website, html))
-        .catch(err => console.log('Failed to fetch page: ', err))
-);
+
+app.listen(port, () => {
+  console.log(`App listening at http://localhost:${port}`)
+})
