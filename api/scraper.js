@@ -1,30 +1,21 @@
 const fetch = require('node-fetch');
-const fs = require('fs');
 
-const FILE_ENCODING = "utf8";
-const DATA_FOLDER = "data";
-const OUTPUT_FILE_EXTENSION = "html";
-const WEBSITES = ["https://turkish123.com/", "https://luna0cosmetics.myshopify.com/", "http://all-guitar-chords.com/"];
-
-function cleanUrl(url) {
-    return url.replace(/(https|http)|[/\\?%*:|"<>]/g, '');
+function trimToHomepage(url) {
+    // if a website has a homepage it'll have at least 2 slashes which will create 3 components:
+    // example 1: https://google.com => [ 'https:', '', 'www.google.com' ]
+    // example 2: https://google.com/ => [ 'https:', '', 'www.google.com', '' ]
+    // example 3: https://google.com/search?q=test => [ 'https:', '', 'www.google.com', 'search?q=test' ]
+    const URL_COMPONENTS = 3; 
+    return url.split('/').slice(0, URL_COMPONENTS).join('/');
 }
 
-function generateFileName(website) {
-    return `./${DATA_FOLDER}/${cleanUrl(website)}.${OUTPUT_FILE_EXTENSION}`;
-}
-
-function generateFile(website, html) {
-    const file = generateFileName(website);
-    fs.writeFile(file, html, FILE_ENCODING, (err) => {
-        if(err) throw err;
-        console.log(`Created File => ${file}`);
+function scrape(url) {
+    return new Promise((resolve, reject) => {
+        fetch(trimToHomepage(url))
+            .then(response => response.text())
+            .then(html => resolve(html))
+            .catch(error => reject(error))
     })
 }
 
-WEBSITES.forEach(
-    website => fetch(website)
-        .then(response => response.text())
-        .then(html => generateFile(website, html))
-        .catch(err => console.log('Failed to fetch page: ', err))
-);
+module.exports = { scrape }
