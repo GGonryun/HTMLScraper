@@ -2,8 +2,7 @@ const settings = require("dotenv").config();
 const express = require('express')
 const cors = require('cors')
 const scraper = require('./scraper');
-
-const port = settings.PORT || 5000;
+const port = settings.parsed.PORT || 5000;
 const STATUS = { ERROR: 400, SUCCESS: 200 };
 const CONTENT_TYPE = { HEADER: 'Content-Type', PLAIN: 'text/plain' };
 
